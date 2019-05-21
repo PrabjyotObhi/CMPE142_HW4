@@ -13,7 +13,7 @@ class ChefThread(Thread):
     food = ['soda', 'burger', 'fries']
 
     def run(self):
-        nums = range(3)
+        num = 1
         global queue
         while True:
             condition.acquire()
@@ -21,7 +21,7 @@ class ChefThread(Thread):
                 print("Queue full, producer is waiting")
                 condition.wait()
                 print("Space in queue, Consumer notified the producer")
-            num = random.choice(nums)
+            num = (num + 1) % 3
             queue.append(self.food[num])
             print("Produced ", self.food[num])
             condition.notify()
@@ -94,17 +94,25 @@ class Customer3Thread(Thread): #waiting for burger[1] and fries[2]
             condition.release()
             time.sleep(random.random())
 
+customer1eaten = 0
+customer2eaten = 0
+customer3eaten = 0
 for val in range(100):
     ChefThread().start()
     #if the queue isnt empty
     if queue:
-        if queue[val%10] is queue[val+1]%10:
-            continue
         if (queue[val%10] is 1 and queue[val+1%10] is 2) or (queue[val%10] is 2 and queue[val+1%10] is 1):
             Customer2Thread().start()
+            customer2eaten = customer2eaten +1
         if (queue[val%10] is 1 and queue[val+1%10] is 3) or (queue[val%10] is 3 and queue[val+1%10] is 2):
             CustomerThread().start()
+            customer1eaten = customer1eaten + 1
         if (queue[val%10] is 2 and queue[val+1%10] is 3) or (queue[val%10] is 3 and queue[val+1%10] is 2):
             Customer3Thread().start()
+            customer3eaten = customer3eaten +1
     else:
         print("No one can eat because the queue is empty")
+
+print("Customer 1 has eaten ", customer1eaten, " amount of times\n")
+print("Customer 2 has eaten ", customer2eaten, " amount of times\n")
+print("Customer 3 has eaten ", customer3eaten, " amount of times\n")
